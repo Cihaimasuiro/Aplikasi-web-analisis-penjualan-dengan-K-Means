@@ -1,26 +1,26 @@
-# Retail K-Means Dashboard
+# Dasbor K-Means Penjualan Ritel
 
-Aplikasi web analisis data penjualan retail berbasis K-Means Clustering (RFM Analysis).
-Dibuat sebagai pendukung paper: **"Penerapan Algoritma K-Means pada Sistem Analisis Data Penjualan Retail Berbasis Web"**.
+Aplikasi web analisis data penjualan ritel berbasis pengelompokan K-Means dan analisis RFM.
+Dibuat sebagai pendukung paper: **"Penerapan Algoritma K-Means pada Sistem Analisis Data Penjualan Ritel Berbasis Web"**.
 
 ## Fitur
-- Upload CSV data transaksi penjualan
-- Auto-detect kolom (CustomerID, Tanggal, Qty, Harga, Invoice, Produk)
-- Dashboard ringkasan penjualan (revenue, tren bulanan, produk terlaris)
+- Unggah CSV data transaksi penjualan
+- Deteksi otomatis kolom (ID Pelanggan, Tanggal, Jumlah Barang, Harga, Faktur, Produk)
+- Dasbor ringkasan penjualan (pendapatan, tren bulanan, produk terlaris)
 - Segmentasi pelanggan RFM dengan K-Means (implementasi murni JavaScript)
-- Elbow Method untuk menentukan nilai k optimal
-- Visualisasi scatter plot, pie chart, dan tabel karakteristik cluster
-- **Ringkasan eksekutif otomatis** (segmen kontributor revenue terbesar & segmen berisiko churn)
-- **Interpretasi detail per segmen**: deskripsi karakteristik RFM (level Tinggi/Sedang/Rendah relatif terhadap rata-rata keseluruhan) beserta persentase populasi dan kontribusi revenue
-- **Rekomendasi strategi bisnis/marketing** otomatis per segmen (loyalitas, win-back, cross-sell, onboarding, dll) berdasarkan kombinasi level Recency/Frequency/Monetary
-- Download hasil segmentasi per pelanggan ke CSV
-- Download ringkasan interpretasi & rekomendasi per segmen ke CSV (untuk lampiran laporan/skripsi)
+- Metode siku untuk membantu menentukan nilai k optimal
+- Visualisasi diagram sebar, diagram pai, dan tabel karakteristik kelompok
+- **Ringkasan eksekutif otomatis** (segmen kontributor pendapatan terbesar dan segmen berisiko kehilangan pelanggan)
+- **Interpretasi detail per segmen**: deskripsi karakteristik RFM (tingkat Tinggi/Sedang/Rendah relatif terhadap rata-rata keseluruhan) beserta persentase populasi dan kontribusi pendapatan
+- **Rekomendasi strategi bisnis dan pemasaran** otomatis per segmen berdasarkan kombinasi tingkat kebaruan transaksi, frekuensi transaksi, dan nilai belanja
+- Unduh hasil segmentasi per pelanggan ke CSV
+- Unduh ringkasan interpretasi dan rekomendasi per segmen ke CSV (untuk lampiran laporan/skripsi)
 
-## Tech Stack
+## Teknologi
 - React 18 + Vite
 - Recharts (visualisasi)
-- PapaParse (parsing CSV)
-- K-Means: implementasi custom JS dengan K-Means++ initialization
+- PapaParse (membaca CSV)
+- K-Means: implementasi JavaScript dengan inisialisasi K-Means++
 
 ## Cara Jalankan Lokal
 
@@ -29,19 +29,19 @@ npm install
 npm run dev
 ```
 
-## Deploy ke Vercel
+## Publikasi ke Vercel
 
-1. Push project ini ke GitHub
-2. Buka https://vercel.com → Import repository
-3. Vercel otomatis mendeteksi Vite → klik Deploy
+1. Unggah proyek ini ke GitHub
+2. Buka https://vercel.com, lalu pilih impor repositori
+3. Vercel otomatis mendeteksi Vite, lalu klik tombol publikasi
 4. Selesai!
 
 ## Format CSV yang Didukung
 
-Kolom (nama bebas, dipetakan saat upload):
+Kolom (nama bebas, dipetakan saat unggah):
 - **ID Pelanggan** (wajib): identitas unik pelanggan
 - **Tanggal Transaksi** (wajib): format YYYY-MM-DD, DD/MM/YYYY, dll
-- **Jumlah/Qty** (wajib): angka positif
+- **Jumlah Barang** (wajib): angka positif
 - **Harga Satuan** (wajib): angka positif
-- **ID Invoice** (opsional): untuk Frequency yang lebih akurat
+- **ID Transaksi/Faktur** (opsional): untuk frekuensi transaksi yang lebih akurat
 - **Nama Produk** (opsional): untuk grafik produk terlaris

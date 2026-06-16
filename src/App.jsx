@@ -65,7 +65,7 @@ function runKMeans(data, k, maxIter=50, restarts=4) {
         if (assignments[i]!==bestC) { assignments[i]=bestC; changed=true; }
       }
       if (!changed && iter > 0) {
-        // Recalculate centroids one last time before breaking
+        // Hitung ulang pusat kelompok satu kali sebelum berhenti.
         const dim=data[0].length;
         const sums=Array.from({length:effK},()=>new Array(dim).fill(0));
         const counts=new Array(effK).fill(0);
@@ -136,7 +136,7 @@ function calculateSilhouetteScore(data, assignments, k) {
 
 
 function getSegmentLabels(k) {
-  const base = ['Pelanggan Utama (Champions)','Pelanggan Setia','Pelanggan Reguler','Pelanggan Potensial','Pelanggan Baru'];
+  const base = ['Pelanggan Utama','Pelanggan Setia','Pelanggan Reguler','Pelanggan Potensial','Pelanggan Baru'];
   if (k===1) return ['Seluruh Pelanggan'];
   if (k-1<=base.length) return [...base.slice(0,k-1),'Pelanggan Berisiko (Berisiko)'];
   const extra=[];
@@ -144,8 +144,8 @@ function getSegmentLabels(k) {
   return [...base,...extra,'Pelanggan Berisiko (Berisiko)'];
 }
 
-// Klasifikasi level (Tinggi/Sedang/Rendah) relatif terhadap rata-rata keseluruhan pelanggan.
-// inverse=true dipakai untuk Recency, karena nilai hari yang LEBIH KECIL berarti LEBIH aktif (lebih baik).
+// Klasifikasi tingkat (Tinggi/Sedang/Rendah) relatif terhadap rata-rata keseluruhan pelanggan.
+// inverse=true dipakai untuk kebaruan transaksi, karena nilai hari yang lebih kecil berarti lebih aktif.
 function classifyLevel(value, overallAvg, inverse = false) {
   if (!overallAvg) return 'Sedang';
   const ratio = value / overallAvg;
@@ -181,41 +181,41 @@ function buildNarrative(s, levelR, levelF, levelM, pctCustomers, pctRevenue) {
 function buildRecommendations(levelR, levelF, levelM) {
   if (levelR === 'Rendah') {
     return [
-      'Lakukan kampanye reaktivasi melalui email/SMS/WhatsApp dengan penawaran diskon khusus untuk memicu transaksi kembali.',
+      'Lakukan kampanye pengaktifan kembali melalui email/SMS/WhatsApp dengan penawaran diskon khusus untuk mendorong transaksi ulang.',
       'Kirim survei singkat untuk memahami alasan menurunnya aktivitas dan perbaiki titik gesekan dalam pengalaman belanja.',
-      'Tawarkan promo "kami merindukanmu" dengan masa berlaku terbatas agar tercipta urgensi untuk kembali bertransaksi.',
+      'Tawarkan promo khusus pelanggan lama dengan masa berlaku terbatas agar pelanggan terdorong kembali bertransaksi.',
     ];
   }
   if (levelF === 'Tinggi' && levelM === 'Tinggi') {
     return [
-      ''Berikan program loyalitas eksklusif seperti tingkatan VIP, akses awal produk baru, atau hadiah khusus.',',
+      'Berikan program loyalitas eksklusif seperti tingkatan VIP, akses awal produk baru, atau hadiah khusus.',
       'Libatkan sebagai promotor merek melalui program rujukan dengan insentif yang menarik.',
-      'Tingkatkan personalisasi komunikasi (rekomendasi produk relevan) untuk menjaga tingkat keterikatan yang sudah tinggi.',
+      'Tingkatkan komunikasi yang dipersonalisasi, misalnya rekomendasi produk yang relevan, untuk menjaga keterikatan pelanggan.',
     ];
   }
   if (levelM === 'Tinggi' && levelF !== 'Tinggi') {
     return [
       'Dorong frekuensi belanja dengan penawaran paket atau diskon untuk pembelian berikutnya dalam jangka waktu tertentu.',
-      'Sediakan layanan personal/akun khusus mengingat nilai transaksi mereka yang besar.',
-      'Kirim pengingat pengisian kembali stok atau rekomendasi produk komplementer berdasarkan riwayat pembelian besar sebelumnya.',
+      'Sediakan layanan personal atau akun khusus karena nilai transaksi mereka besar.',
+      'Kirim pengingat pembelian ulang atau rekomendasi produk pelengkap berdasarkan riwayat pembelian sebelumnya.',
     ];
   }
   if (levelF === 'Tinggi' && levelM !== 'Tinggi') {
     return [
-      'Terapkan strategi penjualan silang dan penjualan tambahan untuk meningkatkan nilai pesanan rata-rata.',
+      'Terapkan strategi penjualan produk pelengkap dan peningkatan paket belanja untuk menaikkan nilai pesanan rata-rata.',
       'Tawarkan paket produk atau diskon bertingkat agar nilai belanja per transaksi meningkat.',
       'Perkenalkan kategori atau produk premium yang relevan dengan kebiasaan belanja mereka yang sering.',
     ];
   }
   if (levelF === 'Rendah' && levelM === 'Rendah' && levelR === 'Tinggi') {
     return [
-      'Berikan seri orientasi atau edukasi produk untuk meningkatkan keterlibatan pelanggan yang relatif baru ini.',
+      'Berikan panduan awal atau edukasi produk untuk meningkatkan keterlibatan pelanggan yang relatif baru ini.',
       'Tawarkan insentif pembelian kedua (diskon khusus dalam 30 hari pertama) untuk mendorong pembelian berulang.',
       'Kumpulkan umpan balik awal untuk memahami ekspektasi dan menyesuaikan pengalaman pelanggan ke depannya.',
     ];
   }
   return [
-    'Pertahankan keterlibatan dengan program loyalitas berbasis poin untuk mendorong kenaikan ke segmen yang lebih bernilai.',
+    'Pertahankan keterlibatan dengan program loyalitas berbasis poin untuk mendorong pelanggan naik ke segmen yang lebih bernilai.',
     'Lakukan kampanye edukasi produk secara bertahap untuk meningkatkan frekuensi dan nilai transaksi.',
     'Pantau perubahan perilaku segmen ini secara berkala karena posisinya di tengah berpotensi bergerak ke segmen lain.',
   ];
@@ -265,17 +265,17 @@ function SectionTitle({ eyebrow, title, desc }) {
 
 const MAPPING_FIELDS = [
   { key:'customerId', label:'ID Pelanggan', required:true, desc:'Identitas unik pelanggan' },
-  { key:'date', label:'Tanggal Transaksi', required:true, desc:'Digunakan untuk menghitung Recency' },
-  { key:'quantity', label:'Jumlah (Qty)', required:true, desc:'Jumlah unit terjual' },
+  { key:'date', label:'Tanggal Transaksi', required:true, desc:'Digunakan untuk menghitung kebaruan transaksi' },
+  { key:'quantity', label:'Jumlah Barang', required:true, desc:'Jumlah unit terjual' },
   { key:'price', label:'Harga Satuan', required:true, desc:'Harga per unit' },
-  { key:'invoiceId', label:'ID Transaksi / Invoice', required:false, desc:'Untuk menghitung Frequency (opsional)' },
+  { key:'invoiceId', label:'ID Transaksi / Faktur', required:false, desc:'Untuk menghitung frekuensi transaksi (opsional)' },
   { key:'product', label:'Nama Produk', required:false, desc:'Untuk ringkasan produk terlaris (opsional)' },
 ];
 
 const AXIS_OPTIONS = [
-  { key:'recency', label:'Recency (hari)' },
+  { key:'recency', label:'Kebaruan transaksi (hari)' },
   { key:'frequency', label:'Frekuensi (kali transaksi)' },
-  { key:'monetary', label:'Moneter (Rp)' },
+  { key:'monetary', label:'Nilai belanja (Rp)' },
 ];
 
 export default function App() {
@@ -371,7 +371,7 @@ export default function App() {
       totalRevenue, totalOrders:invoiceSet.size||transactions.length,
       totalCustomers:customerSet.size, totalProducts:productMap.size,
       avgOrder:totalRevenue/(invoiceSet.size||transactions.length),
-      topProducts:Array.from(productMap.entries()).map(([name,value])=>({name:name.length>18?name.slice(0,18)+'…':name,value})).sort((a,b)=>b.value-a.value).slice(0,8),
+      topProducts:Array.from(productMap.entries()).map(([name,value])=>({name:name.length>18?name.slice(0,18)+'...':name,value})).sort((a,b)=>b.value-a.value).slice(0,8),
       monthly:Array.from(monthMap.entries()).map(([month,value])=>({month,value})).sort((a,b)=>a.month.localeCompare(b.month)),
     };
   }, [transactions]);
@@ -453,8 +453,8 @@ export default function App() {
 
   const downloadResults = () => {
     if (!clusterResult||!clusterSummary) return;
-    const labelMap={}; clusterSummary.forEach(s=>(labelMap[s.cluster]=s.label));
-    const rows=customers.map((c,i)=>({CustomerID:c.customerId,Recency:c.recency,Frequency:c.frequency,Monetary:c.monetary,Kelompok:clusterResult.assignments[i],Segmen:labelMap[clusterResult.assignments[i]]}));
+    const labelMap={}; clusterSummary.forEach(s=>(labelMap[s.kelompok]=s.label));
+    const rows=customers.map((c,i)=>({ID_Pelanggan:c.customerId,Kebaruan_Transaksi_Hari:c.recency,Frekuensi_Transaksi:c.frequency,Nilai_Belanja:c.monetary,Kelompok:clusterResult.assignments[i],Segmen:labelMap[clusterResult.assignments[i]]}));
     const csv=Papa.unparse(rows);
     const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
     const url=URL.createObjectURL(blob);
@@ -464,17 +464,17 @@ export default function App() {
   const downloadSummaryReport = () => {
     if (!clusterInterpretations) return;
     const rows = clusterInterpretations.map(s => ({
-      Kelompok: s.cluster,
+      Kelompok: s.kelompok,
       Segmen: s.label,
       Jumlah_Pelanggan: s.count,
       Persentase_Pelanggan: `${fmtNum(s.pctCustomers, 1)}%`,
-      Avg_Recency_Hari: fmtNum(s.avgR, 1),
-      Level_Recency: s.levelR,
-      Avg_Frequency: fmtNum(s.avgF, 1),
-      Level_Frequency: s.levelF,
-      Avg_Monetary: s.avgM,
-      Level_Monetary: s.levelM,
-      Persentase_Kontribusi_Revenue: `${fmtNum(s.pctRevenue, 1)}%`,
+      Rata_Rata_Kebaruan_Transaksi_Hari: fmtNum(s.avgR, 1),
+      Tingkat_Kebaruan_Transaksi: s.levelR,
+      Rata_Rata_Frekuensi: fmtNum(s.avgF, 1),
+      Tingkat_Frekuensi: s.levelF,
+      Rata_Rata_Nilai_Belanja: s.avgM,
+      Tingkat_Nilai_Belanja: s.levelM,
+      Persentase_Kontribusi_Pendapatan: `${fmtNum(s.pctRevenue, 1)}%`,
       Deskripsi: s.narrative,
       Rekomendasi_Strategi: s.recommendations.join(' | '),
     }));
@@ -487,14 +487,14 @@ export default function App() {
   if (stage==='upload') return (
     <div style={{ minHeight:'100vh', background:C.bg, color:C.text, display:'flex', alignItems:'center', justifyContent:'center', padding:24, fontFamily:'Inter,sans-serif' }}>
       <div style={{ maxWidth:620, width:'100%' }}>
-        <div style={{ fontFamily:'"IBM Plex Mono",monospace', fontSize:12, color:C.amber, letterSpacing:'0.2em', textTransform:'uppercase', marginBottom:14 }}>Sistem Analisis Data Penjualan Retail</div>
+        <div style={{ fontFamily:'"IBM Plex Mono",monospace', fontSize:12, color:C.amber, letterSpacing:'0.2em', textTransform:'uppercase', marginBottom:14 }}>Sistem Analisis Data Penjualan Ritel</div>
         <h1 style={{ fontFamily:'"Fraunces",serif', fontSize:44, fontWeight:600, lineHeight:1.15, margin:0, marginBottom:16 }}>Segmentasi pelanggan berbasis <span style={{color:C.amber}}>K-Means</span></h1>
         <p style={{ color:C.muted, fontSize:15, lineHeight:1.7, marginBottom:32 }}>Unggah data transaksi penjualan (.csv) untuk melihat ringkasan penjualan dan menjalankan segmentasi pelanggan berdasarkan analisis RFM menggunakan algoritma K-Means.</p>
         <Ticket style={{ padding:28, borderStyle:'dashed' }}>
-          <div style={{ fontFamily:'"IBM Plex Mono",monospace', fontSize:13, color:C.muted, marginBottom:14 }}>01 — UNGGAH FILE CSV</div>
+          <div style={{ fontFamily:'"IBM Plex Mono",monospace', fontSize:13, color:C.muted, marginBottom:14 }}>01 - UNGGAH FILE CSV</div>
           <input type="file" accept=".csv" onChange={handleFile} style={{ color:C.muted, fontSize:13 }} />
           {parseError && <div style={{ color:C.rose, fontSize:13, marginTop:14 }}>{parseError}</div>}
-          <div style={{ marginTop:18, paddingTop:18, borderTop:`1px solid ${C.border}`, fontSize:12, color:C.muted, lineHeight:1.7 }}>Kolom yang didukung: ID Pelanggan, Tanggal, Qty, Harga Satuan, ID Invoice (opsional), Nama Produk (opsional).</div>
+          <div style={{ marginTop:18, paddingTop:18, borderTop:`1px solid ${C.border}`, fontSize:12, color:C.muted, lineHeight:1.7 }}>Kolom yang didukung: ID Pelanggan, Tanggal, Jumlah Barang, Harga Satuan, ID Transaksi/Faktur (opsional), Nama Produk (opsional).</div>
         </Ticket>
       </div>
     </div>
@@ -505,7 +505,7 @@ export default function App() {
     const preview = rawData.slice(0,5);
     return (
       <div style={{ minHeight:'100vh', background:C.bg, color:C.text, padding:'40px 48px', maxWidth:1000, margin:'0 auto', fontFamily:'Inter,sans-serif' }}>
-        <div style={{ fontFamily:'"IBM Plex Mono",monospace', fontSize:12, color:C.amber, letterSpacing:'0.2em', textTransform:'uppercase', marginBottom:10 }}>02 — PEMETAAN KOLOM</div>
+        <div style={{ fontFamily:'"IBM Plex Mono",monospace', fontSize:12, color:C.amber, letterSpacing:'0.2em', textTransform:'uppercase', marginBottom:10 }}>02 - PEMETAAN KOLOM</div>
         <h1 style={{ fontFamily:'"Fraunces",serif', fontSize:32, fontWeight:600, margin:0, marginBottom:8 }}>{fileName}</h1>
         <p style={{ color:C.muted, fontSize:14, marginBottom:28 }}>{rawData.length.toLocaleString('id-ID')} baris terdeteksi.</p>
         <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:16, marginBottom:32 }}>
@@ -514,7 +514,7 @@ export default function App() {
               <label style={{ display:'block', fontSize:13, fontWeight:600, marginBottom:4 }}>{f.label} {f.required&&<span style={{color:C.amber}}>*</span>}</label>
               <div style={{ fontSize:12, color:C.muted, marginBottom:10 }}>{f.desc}</div>
               <select value={mapping[f.key]||''} onChange={e=>setMapping(m=>({...m,[f.key]:e.target.value}))} style={{ width:'100%', background:C.surfaceAlt, color:C.text, border:`1px solid ${C.border}`, borderRadius:5, padding:'8px 10px', fontFamily:'"IBM Plex Mono",monospace', fontSize:13 }}>
-                <option value="">{f.required?'— pilih kolom —':'(tidak digunakan)'}</option>
+                <option value="">{f.required?'- pilih kolom -':'(tidak digunakan)'}</option>
                 {headers.map(h=><option key={h} value={h}>{h}</option>)}
               </select>
             </Ticket>
@@ -528,8 +528,8 @@ export default function App() {
           </table>
         </Ticket>
         <div style={{ display:'flex', gap:12 }}>
-          <button onClick={resetAll} style={{ background:'transparent', color:C.text, border:`1px solid ${C.border}`, borderRadius:6, padding:'10px 20px', fontFamily:'"IBM Plex Mono",monospace', fontSize:13, cursor:'pointer' }}>← Ganti File</button>
-          <button disabled={!requiredOk} onClick={()=>setStage('app')} style={{ background:C.amber, color:'#1A1306', border:'none', borderRadius:6, padding:'11px 22px', fontFamily:'"IBM Plex Mono",monospace', fontSize:13, fontWeight:600, cursor:requiredOk?'pointer':'not-allowed', opacity:requiredOk?1:0.4 }}>Proses & Lanjutkan →</button>
+          <button onClick={resetAll} style={{ background:'transparent', color:C.text, border:`1px solid ${C.border}`, borderRadius:6, padding:'10px 20px', fontFamily:'"IBM Plex Mono",monospace', fontSize:13, cursor:'pointer' }}>Kembali ke Unggah File</button>
+          <button disabled={!requiredOk} onClick={()=>setStage('app')} style={{ background:C.amber, color:'#1A1306', border:'none', borderRadius:6, padding:'11px 22px', fontFamily:'"IBM Plex Mono",monospace', fontSize:13, fontWeight:600, cursor:requiredOk?'pointer':'not-allowed', opacity:requiredOk?1:0.4 }}>Proses dan Lanjutkan</button>
         </div>
         {!requiredOk && <div style={{ color:C.rose, fontSize:12, marginTop:10 }}>Lengkapi kolom wajib (*) sebelum melanjutkan.</div>}
       </div>
@@ -541,11 +541,11 @@ export default function App() {
       {/* SIDEBAR */}
       <aside style={{ width:240, background:C.surface, borderRight:`1px solid ${C.border}`, padding:'28px 18px', display:'flex', flexDirection:'column', flexShrink:0 }}>
         <div style={{ padding:'0 6px', marginBottom:28 }}>
-          <div style={{ fontFamily:'"IBM Plex Mono",monospace', fontSize:11, color:C.amber, letterSpacing:'0.2em', textTransform:'uppercase' }}>Retail Analytics</div>
+          <div style={{ fontFamily:'"IBM Plex Mono",monospace', fontSize:11, color:C.amber, letterSpacing:'0.2em', textTransform:'uppercase' }}>Analisis Ritel</div>
           <div style={{ fontFamily:'"Fraunces",serif', fontSize:19, fontWeight:600, marginTop:4 }}>Dasbor K-Means</div>
         </div>
         <nav style={{ display:'flex', flexDirection:'column', gap:4, marginBottom:28 }}>
-          {[['ringkasan','📊 Ringkasan Penjualan'],['segmentasi','🎯 Segmentasi Pelanggan']].map(([tab,label])=>(
+          {[['ringkasan','Ringkasan Penjualan'],['segmentasi','Segmentasi Pelanggan']].map(([tab,label])=>(
             <button key={tab} onClick={()=>setActiveTab(tab)} style={{ display:'flex', alignItems:'center', gap:10, width:'100%', textAlign:'left', padding:'11px 14px', borderRadius:6, background:activeTab===tab?C.surfaceAlt:'transparent', border:'none', cursor:'pointer', color:activeTab===tab?C.amber:C.muted, fontFamily:'Inter,sans-serif', fontSize:14, fontWeight:500 }}>{label}</button>
           ))}
         </nav>
@@ -604,20 +604,20 @@ export default function App() {
         {activeTab==='segmentasi' && (
           customers.length===0 ? <Ticket style={{padding:24}}>Tidak ada data pelanggan yang dapat dianalisis.</Ticket> : (
             <div>
-              <SectionTitle eyebrow="Pengelompokan K-Means" title="Segmentasi Pelanggan (RFM)" desc={`${customers.length.toLocaleString('id-ID')} pelanggan diukur berdasarkan Recency, Frequency, dan Monetary, dinormalisasi (min-max), lalu dikelompokkan dengan K-Means.`} />
+              <SectionTitle eyebrow="Pengelompokan K-Means" title="Segmentasi Pelanggan (RFM)" desc={`${customers.length.toLocaleString('id-ID')} pelanggan diukur berdasarkan kebaruan transaksi, frekuensi transaksi, dan nilai belanja, lalu dinormalisasi (min-max) dan dikelompokkan dengan K-Means.`} />
 
               <Ticket style={{ padding:22, marginBottom:24 }}>
                 <button onClick={() => setShowRfmTable(s => !s)} style={{ width: '100%', background: 'none', border: 'none', color: C.text, padding: 0, textAlign: 'left', cursor: 'pointer' }}>
                   <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
                     <div style={{ fontFamily:'"Fraunces",serif', fontSize:19, fontWeight:600 }}>Analisis RFM</div>
-                    <div style={{ transform: showRfmTable ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}>▼</div>
+                    <div style={{ transform: showRfmTable ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}>v</div>
                   </div>
-                  <div style={{ fontSize:13, color:C.muted, marginTop:4 }}>Tabel rincian nilai Recency, Frequency, dan Monetary untuk setiap pelanggan.</div>
+                  <div style={{ fontSize:13, color:C.muted, marginTop:4 }}>Tabel rincian kebaruan transaksi, frekuensi transaksi, dan nilai belanja untuk setiap pelanggan.</div>
                 </button>
                 {showRfmTable && (
                   <div style={{ marginTop: 20, paddingTop: 16, borderTop: `1px solid ${C.border}` }}>
                     <table style={{ width:'100%', borderCollapse:'collapse', fontSize:13 }}>
-                      <thead><tr>{['ID Pelanggan','Recency (hari)','Frequency (kali)','Monetary (Rp)'].map(h=><th key={h} style={{ textAlign:'left', padding:'10px 14px', color:C.muted, borderBottom:`1px solid ${C.border}`, fontSize:11, textTransform:'uppercase', letterSpacing:'0.08em' }}>{h}</th>)}</tr></thead>
+                      <thead><tr>{['ID Pelanggan','Kebaruan transaksi (hari)','Frekuensi (kali)','Nilai belanja (Rp)'].map(h=><th key={h} style={{ textAlign:'left', padding:'10px 14px', color:C.muted, borderBottom:`1px solid ${C.border}`, fontSize:11, textTransform:'uppercase', letterSpacing:'0.08em' }}>{h}</th>)}</tr></thead>
                       <tbody>
                         {customers.slice((rfmCurrentPage - 1) * RFM_PAGE_SIZE, rfmCurrentPage * RFM_PAGE_SIZE).map(c=>(
                           <tr key={c.customerId}>
@@ -630,9 +630,9 @@ export default function App() {
                       </tbody>
                     </table>
                     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: 16, gap: 8, fontSize: 12, color: C.muted }}>
-                      <button onClick={() => setRfmCurrentPage(p => Math.max(1, p - 1))} disabled={rfmCurrentPage === 1} style={{ background:C.surfaceAlt, color:C.text, border:`1px solid ${C.border}`, borderRadius:4, padding:'4px 10px', cursor:'pointer' }}>‹ Sebelumnya</button>
+                      <button onClick={() => setRfmCurrentPage(p => Math.max(1, p - 1))} disabled={rfmCurrentPage === 1} style={{ background:C.surfaceAlt, color:C.text, border:`1px solid ${C.border}`, borderRadius:4, padding:'4px 10px', cursor:'pointer' }}>Sebelumnya</button>
                       <span>Halaman {rfmCurrentPage} dari {Math.ceil(customers.length / RFM_PAGE_SIZE)}</span>
-                      <button onClick={() => setRfmCurrentPage(p => Math.min(Math.ceil(customers.length / RFM_PAGE_SIZE), p + 1))} disabled={rfmCurrentPage === Math.ceil(customers.length / RFM_PAGE_SIZE)} style={{ background:C.surfaceAlt, color:C.text, border:`1px solid ${C.border}`, borderRadius:4, padding:'4px 10px', cursor:'pointer' }}>Berikutnya ›</button>
+                      <button onClick={() => setRfmCurrentPage(p => Math.min(Math.ceil(customers.length / RFM_PAGE_SIZE), p + 1))} disabled={rfmCurrentPage === Math.ceil(customers.length / RFM_PAGE_SIZE)} style={{ background:C.surfaceAlt, color:C.text, border:`1px solid ${C.border}`, borderRadius:4, padding:'4px 10px', cursor:'pointer' }}>Berikutnya</button>
                     </div>
                   </div>
                 )}
@@ -642,20 +642,20 @@ export default function App() {
                 <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', flexWrap:'wrap', gap:12, marginBottom:16 }}>
                   <div>
                     <div style={{ fontFamily:'"IBM Plex Mono",monospace', fontSize:12, color:C.amber, marginBottom:4 }}>LANGKAH 1: EVALUASI MODEL</div>
-                    <div style={{ fontFamily:'"Fraunces",serif', fontSize:19, fontWeight:600 }}>Menentukan Jumlah Cluster (k) Optimal</div>
-                    <div style={{ fontSize:13, color:C.muted, marginTop:4, maxWidth: 600 }}>Gunakan metode Elbow dan Silhouette Score untuk menemukan nilai 'k' terbaik untuk data Anda.</div>
+                    <div style={{ fontFamily:'"Fraunces",serif', fontSize:19, fontWeight:600 }}>Menentukan Jumlah Kelompok (k) Optimal</div>
+                    <div style={{ fontSize:13, color:C.muted, marginTop:4, maxWidth: 600 }}>Gunakan metode siku dan skor silhouette untuk membantu menemukan nilai 'k' terbaik untuk data Anda.</div>
                   </div>
-                  <button onClick={runEvaluation} disabled={evaluationLoading} style={{ background:C.amber, color:'#1A1306', border:'none', borderRadius:6, padding:'11px 22px', fontFamily:'"IBM Plex Mono",monospace', fontSize:13, fontWeight:600, cursor:'pointer', opacity:evaluationLoading?0.5:1 }}>{evaluationLoading?'Menghitung…':'Jalankan Evaluasi (k=2-8)'}</button>
+                  <button onClick={runEvaluation} disabled={evaluationLoading} style={{ background:C.amber, color:'#1A1306', border:'none', borderRadius:6, padding:'11px 22px', fontFamily:'"IBM Plex Mono",monospace', fontSize:13, fontWeight:600, cursor:'pointer', opacity:evaluationLoading?0.5:1 }}>{evaluationLoading?'Menghitung...':'Jalankan Evaluasi (k=2-8)'}</button>
                 </div>
                 {evaluationData && (
                   <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap: 24, borderTop: `1px solid ${C.border}`, paddingTop: 20 }}>
                     <div>
-                      <div style={{ fontFamily:'"IBM Plex Mono",monospace', fontSize:12, color:C.muted, marginBottom:4 }}>Elbow Method (WCSS)</div>
+                      <div style={{ fontFamily:'"IBM Plex Mono",monospace', fontSize:12, color:C.muted, marginBottom:4 }}>Metode Siku (WCSS)</div>
                       <p style={{ fontSize:12, color:C.muted, marginTop:0, marginBottom:12, lineHeight:1.6 }}>Pilih 'k' di titik "siku" (penurunan WCSS mulai melandai). Nilai WCSS yang lebih rendah lebih baik.</p>
                       <ResponsiveContainer width="100%" height={240}>
                         <LineChart data={evaluationData}>
                           <CartesianGrid stroke={C.border} strokeDasharray="3 3" />
-                          <XAxis dataKey="k" type="number" domain={['dataMin', 'dataMax']} stroke={C.muted} fontSize={11} label={{value:'k (jumlah cluster)',position:'insideBottom',offset:-2,fill:C.muted,fontSize:11}} />
+                          <XAxis dataKey="k" type="number" domain={['dataMin', 'dataMax']} stroke={C.muted} fontSize={11} label={{value:'k (jumlah kelompok)',position:'insideBottom',offset:-2,fill:C.muted,fontSize:11}} />
                           <YAxis stroke={C.muted} fontSize={11} label={{value:'WCSS',angle:-90,position:'insideLeft',fill:C.muted,fontSize:11}} />
                           <Tooltip contentStyle={tooltipStyle} />
                           <Line type="monotone" dataKey="wcss" stroke={C.amber} strokeWidth={2.5} dot={{r:4,fill:C.amber}} name="WCSS" />
@@ -663,15 +663,15 @@ export default function App() {
                       </ResponsiveContainer>
                     </div>
                     <div>
-                      <div style={{ fontFamily:'"IBM Plex Mono",monospace', fontSize:12, color:C.muted, marginBottom:4 }}>Skor Silhouette</div>
-                      <p style={{ fontSize:12, color:C.muted, marginTop:0, marginBottom:12, lineHeight:1.6 }}>Pilih 'k' dengan skor tertinggi. Skor mendekati +1 menunjukkan cluster padat dan terpisah dengan baik.</p>
+                      <div style={{ fontFamily:'"IBM Plex Mono",monospace', fontSize:12, color:C.muted, marginBottom:4 }}>Skor Pemisahan Kelompok</div>
+                      <p style={{ fontSize:12, color:C.muted, marginTop:0, marginBottom:12, lineHeight:1.6 }}>Pilih 'k' dengan skor tertinggi. Skor mendekati +1 menunjukkan kelompok pelanggan yang rapat dan terpisah dengan baik.</p>
                       <ResponsiveContainer width="100%" height={240}>
                         <LineChart data={evaluationData}>
                           <CartesianGrid stroke={C.border} strokeDasharray="3 3" />
-                          <XAxis dataKey="k" type="number" domain={['dataMin', 'dataMax']} stroke={C.muted} fontSize={11} label={{value:'k (jumlah cluster)',position:'insideBottom',offset:-2,fill:C.muted,fontSize:11}} />
-                          <YAxis stroke={C.muted} fontSize={11} domain={[0, 1]} label={{value:'Score',angle:-90,position:'insideLeft',fill:C.muted,fontSize:11}} />
+                          <XAxis dataKey="k" type="number" domain={['dataMin', 'dataMax']} stroke={C.muted} fontSize={11} label={{value:'k (jumlah kelompok)',position:'insideBottom',offset:-2,fill:C.muted,fontSize:11}} />
+                          <YAxis stroke={C.muted} fontSize={11} domain={[0, 1]} label={{value:'Skor',angle:-90,position:'insideLeft',fill:C.muted,fontSize:11}} />
                           <Tooltip contentStyle={tooltipStyle} />
-                          <Line type="monotone" dataKey="silhouette" stroke={C.teal} strokeWidth={2.5} dot={{r:4,fill:C.teal}} name="Silhouette" />
+                          <Line type="monotone" dataKey="silhouette" stroke={C.teal} strokeWidth={2.5} dot={{r:4,fill:C.teal}} name="Skor pemisahan" />
                         </LineChart>
                       </ResponsiveContainer>
                     </div>
@@ -690,7 +690,7 @@ export default function App() {
                       Nilai k Pilihan:
                       <input type="number" min={2} max={Math.min(8,customers.length)} value={kValue} onChange={e=>setKValue(Math.max(2,Math.min(8,Number(e.target.value)||2)))} style={{ width:64, background:C.surfaceAlt, color:C.text, border:`1px solid ${C.border}`, borderRadius:5, padding:'8px 10px', fontFamily:'"IBM Plex Mono",monospace', fontSize:13 }} />
                     </label>
-                    <button onClick={runClustering} disabled={clusterLoading} style={{ background:C.amber, color:'#1A1306', border:'none', borderRadius:6, padding:'11px 22px', fontFamily:'"IBM Plex Mono",monospace', fontSize:13, fontWeight:600, cursor:'pointer', opacity:clusterLoading?0.5:1 }}>{clusterLoading?'Memproses…':'Jalankan K-Means'}</button>
+                    <button onClick={runClustering} disabled={clusterLoading} style={{ background:C.amber, color:'#1A1306', border:'none', borderRadius:6, padding:'11px 22px', fontFamily:'"IBM Plex Mono",monospace', fontSize:13, fontWeight:600, cursor:'pointer', opacity:clusterLoading?0.5:1 }}>{clusterLoading?'Memproses...':'Jalankan K-Means'}</button>
                   </div>
                 </div>
               </Ticket>
@@ -750,13 +750,13 @@ export default function App() {
                   <Ticket style={{ padding:22, marginBottom:24, overflowX:'auto' }}>
                     <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:14, flexWrap:'wrap', gap:10 }}>
                       <div style={{ fontSize:12, color:C.muted, fontFamily:'"IBM Plex Mono",monospace' }}>KARAKTERISTIK KELOMPOK</div>
-                      <button onClick={downloadResults} style={{ background:'transparent', color:C.text, border:`1px solid ${C.border}`, borderRadius:6, padding:'10px 20px', fontFamily:'"IBM Plex Mono",monospace', fontSize:13, cursor:'pointer' }}>⬇ Unduh Data Per Pelanggan (CSV)</button>
+                      <button onClick={downloadResults} style={{ background:'transparent', color:C.text, border:`1px solid ${C.border}`, borderRadius:6, padding:'10px 20px', fontFamily:'"IBM Plex Mono",monospace', fontSize:13, cursor:'pointer' }}>Unduh Data Per Pelanggan (CSV)</button>
                     </div>
                     <table style={{ width:'100%', borderCollapse:'collapse', fontSize:13 }}>
-                      <thead><tr>{['Kelompok','Segmen','Pelanggan','Avg Recency','R-Level','Avg Frequency','F-Level','Avg Monetary','M-Level'].map(h=><th key={h} style={{ textAlign:'left', padding:'10px 14px', color:C.muted, borderBottom:`1px solid ${C.border}`, fontSize:11, textTransform:'uppercase', letterSpacing:'0.08em' }}>{h}</th>)}</tr></thead>
+                      <thead><tr>{['Kelompok','Segmen','Pelanggan','Rata-rata kebaruan','Tingkat kebaruan','Rata-rata frekuensi','Tingkat frekuensi','Rata-rata nilai belanja','Tingkat nilai belanja'].map(h=><th key={h} style={{ textAlign:'left', padding:'10px 14px', color:C.muted, borderBottom:`1px solid ${C.border}`, fontSize:11, textTransform:'uppercase', letterSpacing:'0.08em' }}>{h}</th>)}</tr></thead>
                       <tbody>
                         {clusterInterpretations.map(s=>(
-                          <tr key={s.cluster}>
+                          <tr key={s.kelompok}>
                             <td style={{ padding:'10px 14px', borderBottom:`1px solid ${C.border}`, fontFamily:'"IBM Plex Mono",monospace' }}><span style={{ display:'inline-block', width:10, height:10, borderRadius:'50%', background:CLUSTER_COLORS[s.kelompok%CLUSTER_COLORS.length], marginRight:8 }} />{s.kelompok}</td>
                             <td style={{ padding:'10px 14px', borderBottom:`1px solid ${C.border}`, fontFamily:'Inter,sans-serif', fontWeight:500 }}>{s.label}</td>
                             <td style={{ padding:'10px 14px', borderBottom:`1px solid ${C.border}`, fontFamily:'"IBM Plex Mono",monospace' }}>{fmtNum(s.count)}</td>
@@ -779,7 +779,7 @@ export default function App() {
                         <p style={{ fontSize:13.5, color:C.text, lineHeight:1.75, margin:0 }}>
                           Dari hasil segmentasi ini, segmen <strong style={{color:C.amber}}>{executiveSummary.top.label}</strong> memberikan kontribusi pendapatan terbesar yaitu sekitar {fmtNum(executiveSummary.top.pctRevenue,1)}% dari total pendapatan meski hanya berisi {fmtNum(executiveSummary.top.pctCustomers,1)}% dari total pelanggan ({fmtNum(executiveSummary.top.count)} pelanggan), menjadikannya aset utama yang perlu dijaga dan dipertahankan.
                           {executiveSummary.atRisk && (
-                            <> Di sisi lain, segmen <strong style={{color:C.rose}}>{executiveSummary.atRisk.label}</strong> berisiko kehilangan pelanggan dengan {fmtNum(executiveSummary.atRisk.count)} pelanggan ({fmtNum(executiveSummary.atRisk.pctCustomers,1)}%) yang sudah lama tidak bertransaksi (rata-rata {fmtNum(executiveSummary.atRisk.avgR,1)} hari sejak transaksi terakhir), sehingga memerlukan perhatian khusus melalui strategi reaktivasi agar tidak hilang sepenuhnya.</>
+                            <> Di sisi lain, segmen <strong style={{color:C.rose}}>{executiveSummary.atRisk.label}</strong> berisiko kehilangan pelanggan dengan {fmtNum(executiveSummary.atRisk.count)} pelanggan ({fmtNum(executiveSummary.atRisk.pctCustomers,1)}%) yang sudah lama tidak bertransaksi (rata-rata {fmtNum(executiveSummary.atRisk.avgR,1)} hari sejak transaksi terakhir), sehingga memerlukan perhatian khusus melalui strategi pengaktifan kembali agar tidak hilang sepenuhnya.</>
                           )}
                         </p>
                       </Ticket>
@@ -787,23 +787,23 @@ export default function App() {
                       <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:14, flexWrap:'wrap', gap:10 }}>
                         <div>
                           <div style={{ fontFamily:'"Fraunces",serif', fontSize:19, fontWeight:600 }}>Interpretasi & Rekomendasi per Segmen</div>
-                          <div style={{ fontSize:13, color:C.muted, marginTop:4 }}>Penjabaran karakteristik tiap cluster beserta strategi bisnis/marketing yang relevan.</div>
+                          <div style={{ fontSize:13, color:C.muted, marginTop:4 }}>Penjabaran karakteristik tiap kelompok beserta strategi bisnis dan pemasaran yang relevan.</div>
                         </div>
-                        <button onClick={downloadSummaryReport} style={{ background:'transparent', color:C.text, border:`1px solid ${C.border}`, borderRadius:6, padding:'10px 20px', fontFamily:'"IBM Plex Mono",monospace', fontSize:13, cursor:'pointer', flexShrink:0 }}>⬇ Unduh Ringkasan & Rekomendasi (CSV)</button>
+                        <button onClick={downloadSummaryReport} style={{ background:'transparent', color:C.text, border:`1px solid ${C.border}`, borderRadius:6, padding:'10px 20px', fontFamily:'"IBM Plex Mono",monospace', fontSize:13, cursor:'pointer', flexShrink:0 }}>Unduh Ringkasan dan Rekomendasi (CSV)</button>
                       </div>
 
                       <div style={{ display:'flex', flexDirection:'column', gap:16, marginBottom:24 }}>
                         {clusterInterpretations.map(s => (
-                          <Ticket key={s.cluster} style={{ padding:22 }}>
+                          <Ticket key={s.kelompok} style={{ padding:22 }}>
                             <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:12, flexWrap:'wrap' }}>
                               <span style={{ width:12, height:12, borderRadius:'50%', background:CLUSTER_COLORS[s.kelompok%CLUSTER_COLORS.length], display:'inline-block', flexShrink:0 }} />
                               <div style={{ fontFamily:'"Fraunces",serif', fontSize:18, fontWeight:600 }}>{s.label}</div>
                               <div style={{ fontSize:12, color:C.muted, fontFamily:'"IBM Plex Mono",monospace' }}>
-                                {fmtNum(s.count)} pelanggan · {fmtNum(s.pctCustomers,1)}% populasi · {fmtNum(s.pctRevenue,1)}% kontribusi revenue
+                                {fmtNum(s.count)} pelanggan - {fmtNum(s.pctCustomers,1)}% populasi - {fmtNum(s.pctRevenue,1)}% kontribusi pendapatan
                               </div>
                             </div>
                             <p style={{ fontSize:13.5, color:C.text, lineHeight:1.75, marginBottom:14 }}>{s.narrative}</p>
-                            <div style={{ fontSize:11, color:C.muted, textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:8, fontFamily:'"IBM Plex Mono",monospace' }}>Rekomendasi Strategi Bisnis/Marketing</div>
+                            <div style={{ fontSize:11, color:C.muted, textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:8, fontFamily:'"IBM Plex Mono",monospace' }}>Rekomendasi Strategi Bisnis dan Pemasaran</div>
                             <ul style={{ margin:0, paddingLeft:18, display:'flex', flexDirection:'column', gap:6 }}>
                               {s.recommendations.map((r,i) => <li key={i} style={{ fontSize:13.5, color:C.text, lineHeight:1.7 }}>{r}</li>)}
                             </ul>
