@@ -2,7 +2,7 @@
   "name": "retail-kmeans",
   "private": true,
   "version": "0.0.0",
-  "homepage": "https://<USERNAME>.github.io/Aplikasi-web-analisis-penjualan-dengan-K-Means",
+  "homepage": "https://Cihaimasuiro.github.io/Aplikasi-web-analisis-penjualan-dengan-K-Means",
   "type": "module",
   "scripts": {
     "dev": "vite",
