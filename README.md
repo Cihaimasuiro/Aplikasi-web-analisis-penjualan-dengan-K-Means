@@ -10,3 +10,6 @@ kemudian menentukan variable yang ingin di olah
 kemudian ada perhitungan k
 evaluasi dan hasil
 lalu ada grafik pca
+
+untuk menjalankan program install pip yang ada di requirements.txt
+lalu bash streamlit run app.py
