@@ -1,11 +1,12 @@
 import numpy as np
 import pandas as pd
 from sklearn.cluster import KMeans
-from typing import Tuple, List
+from sklearn.metrics import silhouette_score
+from typing import Tuple, List, Optional
 
 
-# Compute WCSS for range of k values
 def compute_wcss(X: pd.DataFrame, k_range: range) -> List[float]:
+    """Compute Within-Cluster Sum of Squares for each k."""
     wcss = []
     for k in k_range:
         kmeans = KMeans(n_clusters=k, random_state=42, n_init=10)
@@ -14,10 +15,89 @@ def compute_wcss(X: pd.DataFrame, k_range: range) -> List[float]:
     return wcss
 
 
-# Run kmeans and return labels and centroids
+def detect_elbow_k(wcss: List[float], k_range: range) -> int:
+    """
+    Detect optimal K from WCSS using the 'Knee / Elbow' point method.
+
+    Uses the perpendicular distance from the line connecting the first and
+    last WCSS point — the K with maximum distance is the elbow.
+    Falls back to the largest single-step WCSS drop if fewer than 3 points.
+    """
+    ks = list(k_range)
+    if len(wcss) < 3:
+        drops = [wcss[i - 1] - wcss[i] for i in range(1, len(wcss))]
+        return ks[drops.index(max(drops)) + 1] if drops else ks[0]
+
+    # Vector from first to last point
+    p1 = np.array([ks[0], wcss[0]], dtype=float)
+    p2 = np.array([ks[-1], wcss[-1]], dtype=float)
+    line_vec = p2 - p1
+    line_len = np.linalg.norm(line_vec)
+
+    distances = []
+    for i, (k, w) in enumerate(zip(ks, wcss)):
+        pt = np.array([k, w], dtype=float)
+        proj = np.dot(pt - p1, line_vec) / (line_len ** 2) * line_vec
+        dist = np.linalg.norm((pt - p1) - proj)
+        distances.append(dist)
+
+    return ks[int(np.argmax(distances))]
+
+
+def compute_silhouette_per_k(X: pd.DataFrame, k_range: range) -> List[dict]:
+    """Compute Silhouette Score for each k in range (k >= 2)."""
+    results = []
+    for k in k_range:
+        if k < 2:
+            continue
+        labels, _, _ = run_kmeans(X, k)
+        try:
+            score = float(silhouette_score(X, labels))
+        except Exception:
+            score = float('nan')
+        results.append({'k': k, 'silhouette': round(score, 4)})
+    return results
+
+
+def recommend_k(
+    wcss: Optional[List[float]],
+    k_range: range,
+    X: Optional[pd.DataFrame] = None,
+) -> dict:
+    """
+    Returns recommended K from both Elbow Method and Silhouette Score.
+
+    {
+      'elbow_k': int,
+      'silhouette_k': int | None,
+      'silhouette_scores': list[dict],  # [{k, silhouette}]
+      'final_k': int,   # consensus: prefer silhouette if available
+    }
+    """
+    elbow_k = detect_elbow_k(wcss, k_range) if wcss else list(k_range)[1]
+
+    sil_scores = []
+    sil_k = None
+    if X is not None and len(X) >= 4:
+        sil_range = range(max(2, k_range.start), k_range.stop)
+        sil_scores = compute_silhouette_per_k(X, sil_range)
+        if sil_scores:
+            best = max(sil_scores, key=lambda r: r['silhouette'] if not np.isnan(r['silhouette']) else -1)
+            sil_k = best['k']
+
+    # Consensus: if both agree or only one available
+    final_k = sil_k if sil_k is not None else elbow_k
+
+    return {
+        'elbow_k': elbow_k,
+        'silhouette_k': sil_k,
+        'silhouette_scores': sil_scores,
+        'final_k': final_k,
+    }
+
+
 def run_kmeans(X: pd.DataFrame, k: int) -> Tuple[np.ndarray, np.ndarray, KMeans]:
+    """Run K-Means and return (labels, centroids, model)."""
     kmeans = KMeans(n_clusters=k, random_state=42, n_init=10)
     kmeans.fit(X)
-    labels = kmeans.labels_
-    centroids = kmeans.cluster_centers_
-    return labels, centroids, kmeans
+    return kmeans.labels_, kmeans.cluster_centers_, kmeans

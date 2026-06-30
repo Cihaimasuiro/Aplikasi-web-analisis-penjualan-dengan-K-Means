@@ -34,17 +34,21 @@ def main():
     with rec_col1:
         st.subheader("Rekomendasi Silhouette")
         best = recommendations["silhouette"]
-        if best:
-            st.metric("K terbaik", int(best["k_value"]), round(best["silhouette_score"], 4))
+        if best and best["k_value"] is not None:
+            score = best["silhouette_score"]
+            if score is not None:
+                st.metric("K terbaik", int(best["k_value"]), round(score, 4))
         else:
             st.info("Belum ada hasil clustering.")
     with rec_col2:
         st.subheader("Rekomendasi Davies-Bouldin")
         best = recommendations["davies_bouldin"]
-        if best:
-            st.metric("K terbaik", int(best["k_value"]), round(best["davies_bouldin_index"], 4))
-        else:
-            st.info("Belum ada hasil clustering.")
+        if best and best["k_value"] is not None:
+            score = best["davies_bouldin_index"]
+            if score is not None:
+                st.metric("K terbaik", int(best["k_value"]), round(score, 4))
+            else:
+                st.info("Belum ada hasil clustering.")
 
     st.markdown("---")
     left, right = st.columns([1, 1])
