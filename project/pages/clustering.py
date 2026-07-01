@@ -90,7 +90,7 @@ def main():
     # ── Mode selector ────────────────────────────────────────────────────────
     mode = st.radio(
         "Mode Clustering",
-        ["🔵 Mode RFM (Otomatis)", "⚙️ Mode Manual (Pilih Fitur)"],
+        [" Mode RFM (Otomatis)", "Mode Manual (Pilih Fitur)"],
         horizontal=True,
     )
 
