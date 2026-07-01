@@ -1,3 +1,4 @@
+import streamlit as st
 from sklearn.metrics import silhouette_score, davies_bouldin_score, calinski_harabasz_score
 import numpy as np
 import pandas as pd
@@ -5,6 +6,7 @@ from typing import Dict, Any
 
 
 # Compute evaluation metrics for clustering
+@st.cache_data
 def compute_scores(X: pd.DataFrame, labels: np.ndarray) -> Dict[str, float]:
     scores = {}
     try:
@@ -61,6 +63,7 @@ def _pdf_text(value: Any) -> str:
     return text.encode("latin-1", "replace").decode("latin-1")
 
 
+@st.cache_data
 def build_evaluation_pdf(result: Dict[str, Any], interpretation: Dict[str, str]) -> bytes:
     lines = [
         "Laporan Evaluasi Clustering",

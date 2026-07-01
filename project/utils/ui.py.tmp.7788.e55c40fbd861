@@ -1,0 +1,22 @@
+import streamlit as st
+
+
+def render_sidebar():
+    st.sidebar.markdown('<div class="sidebar-title">Customer Analytics</div>', unsafe_allow_html=True)
+    st.sidebar.caption("Segmentasi pelanggan berbasis K-Means")
+    st.sidebar.markdown(
+        """
+        <a class="sidebar-link" href="/" target="_self">Dashboard</a>
+        <a class="sidebar-link" href="/upload" target="_self">Upload Dataset</a>
+        <a class="sidebar-link" href="/preprocessing" target="_self">Preprocessing</a>
+        <a class="sidebar-link" href="/clustering" target="_self">Clustering</a>
+        <a class="sidebar-link" href="/detail_clustering" target="_self">Detail Hasil</a>
+        <a class="sidebar-link" href="/evaluation" target="_self">Evaluation</a>
+        <a class="sidebar-link" href="/visualization" target="_self">Visualization</a>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def setup_page():
+    render_sidebar()
