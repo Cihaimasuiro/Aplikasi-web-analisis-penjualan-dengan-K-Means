@@ -46,7 +46,6 @@ def detect_elbow_k(wcss: List[float], k_range: range) -> int:
     return ks[int(np.argmax(distances))]
 
 
-@st.cache_data
 def compute_silhouette_per_k(X: pd.DataFrame, k_range: range) -> List[dict]:
     """Compute Silhouette Score for each k in range (k >= 2)."""
     results = []
@@ -62,7 +61,6 @@ def compute_silhouette_per_k(X: pd.DataFrame, k_range: range) -> List[dict]:
     return results
 
 
-@st.cache_data
 def recommend_k(
     wcss: Optional[List[float]],
     k_range: range,
@@ -100,7 +98,6 @@ def recommend_k(
     }
 
 
-@st.cache_data
 def run_kmeans(X: pd.DataFrame, k: int) -> Tuple[np.ndarray, np.ndarray, KMeans]:
     """Run K-Means and return (labels, centroids, model)."""
     kmeans = KMeans(n_clusters=k, random_state=42, n_init=10)

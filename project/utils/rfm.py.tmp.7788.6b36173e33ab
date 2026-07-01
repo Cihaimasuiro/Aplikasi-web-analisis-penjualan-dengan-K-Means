@@ -50,7 +50,6 @@ def detect_rfm_columns(df: pd.DataFrame) -> dict:
     }
 
 
-@st.cache_data
 def compute_rfm(
     df: pd.DataFrame,
     customer_col: str,
@@ -177,7 +176,6 @@ def compute_rfm(
     return rfm.reset_index(drop=True), diag
 
 
-@st.cache_data
 def scale_rfm(rfm: pd.DataFrame) -> pd.DataFrame:
     """Min-max normalise R, F, M to [0, 1]. Returns scaled copy."""
     from sklearn.preprocessing import MinMaxScaler
@@ -188,7 +186,6 @@ def scale_rfm(rfm: pd.DataFrame) -> pd.DataFrame:
     return scaled
 
 
-@st.cache_data
 def rfm_summary_table(rfm: pd.DataFrame, labels: np.ndarray) -> pd.DataFrame:
     """
     Build a rich cluster-level summary of RFM values.

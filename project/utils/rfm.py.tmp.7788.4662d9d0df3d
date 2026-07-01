@@ -188,7 +188,6 @@ def scale_rfm(rfm: pd.DataFrame) -> pd.DataFrame:
     return scaled
 
 
-@st.cache_data
 def rfm_summary_table(rfm: pd.DataFrame, labels: np.ndarray) -> pd.DataFrame:
     """
     Build a rich cluster-level summary of RFM values.

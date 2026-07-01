@@ -1,3 +1,4 @@
+import streamlit as st
 import sqlite3
 import pandas as pd
 import os
@@ -71,6 +72,7 @@ def save_dataset_to_db(df: pd.DataFrame, filename: str, db_path: str) -> int:
         conn.close()
 
 
+@st.cache_data
 def get_datasets(db_path: str):
     conn = sqlite3.connect(db_path)
     df = pd.read_sql_query("SELECT * FROM datasets ORDER BY id DESC", conn)
@@ -78,6 +80,7 @@ def get_datasets(db_path: str):
     return df
 
 
+@st.cache_data
 def get_dataset_table(db_path: str, dataset_id: int) -> pd.DataFrame:
     conn = sqlite3.connect(db_path)
     table_name = f"data_{dataset_id}"
@@ -100,6 +103,7 @@ def save_selected_features(db_path: str, dataset_id: int, features: List[str]):
     conn.close()
 
 
+@st.cache_data
 def get_last_selected_features(db_path: str, dataset_id: int):
     conn = sqlite3.connect(db_path)
     cur = conn.cursor()
@@ -127,6 +131,7 @@ def save_clustering_result(db_path: str, dataset_id: int, k: int, silhouette: fl
     return result_id
 
 
+@st.cache_data
 def get_last_clustering(db_path: str) -> Dict[str, Any] | None:
     conn = sqlite3.connect(db_path)
     cur = conn.cursor()
@@ -139,6 +144,7 @@ def get_last_clustering(db_path: str) -> Dict[str, Any] | None:
     return None
 
 
+@st.cache_data
 def get_clustering_history(db_path: str, limit: int | None = None) -> pd.DataFrame:
     conn = sqlite3.connect(db_path)
     query = """
@@ -162,6 +168,7 @@ def get_clustering_history(db_path: str, limit: int | None = None) -> pd.DataFra
     return df
 
 
+@st.cache_data
 def get_clustering_result(db_path: str, result_id: int) -> Dict[str, Any] | None:
     conn = sqlite3.connect(db_path)
     cur = conn.cursor()
@@ -199,6 +206,7 @@ def get_clustering_result(db_path: str, result_id: int) -> Dict[str, Any] | None
     return dict(zip(keys, row))
 
 
+@st.cache_data
 def get_best_k_recommendations(db_path: str, dataset_id: int | None = None) -> Dict[str, Any]:
     conn = sqlite3.connect(db_path)
     where_clause = "WHERE dataset_id=?" if dataset_id is not None else ""
@@ -231,6 +239,7 @@ def get_best_k_recommendations(db_path: str, dataset_id: int | None = None) -> D
     }
 
 
+@st.cache_data
 def get_clustering_table(db_path: str, dataset_id: int, k: int, limit: int | None = None) -> pd.DataFrame:
     conn = sqlite3.connect(db_path)
     query = f"SELECT * FROM clustering_{int(dataset_id)}_k{int(k)}"
@@ -244,6 +253,7 @@ def get_clustering_table(db_path: str, dataset_id: int, k: int, limit: int | Non
     return df
 
 
+@st.cache_data
 def get_clustering_k_values(db_path: str, dataset_id: int) -> List[int]:
     conn = sqlite3.connect(db_path)
     cur = conn.cursor()
