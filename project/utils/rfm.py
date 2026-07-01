@@ -20,22 +20,32 @@ def _norm(s: str) -> str:
     return s.lower().replace(' ', '').replace('_', '').replace('-', '')
 
 
-def _find(headers: list[str], hints: list[str]) -> Optional[str]:
+def _find(headers: list[str], hints_norm: list[str]) -> Optional[str]:
     for h in headers:
-        if _norm(h) in hints:
-            return h
+        norm_h = _norm(h)
+        for hint_norm in hints_norm:
+            if norm_h == hint_norm:
+                return h
     return None
 
 
 def detect_rfm_columns(df: pd.DataFrame) -> dict:
     cols = df.columns.tolist()
+    # Pre-normalize hints
+    norm_customer_hints = [_norm(h) for h in CUSTOMER_HINTS]
+    norm_date_hints = [_norm(h) for h in DATE_HINTS]
+    norm_invoice_hints = [_norm(h) for h in INVOICE_HINTS]
+    norm_monetary_hints = [_norm(h) for h in MONETARY_HINTS]
+    norm_quantity_hints = [_norm(h) for h in QUANTITY_HINTS]
+    norm_price_hints = [_norm(h) for h in PRICE_HINTS]
+
     return {
-        'customer': _find(cols, CUSTOMER_HINTS),
-        'date':     _find(cols, DATE_HINTS),
-        'invoice':  _find(cols, INVOICE_HINTS),
-        'monetary': _find(cols, MONETARY_HINTS),
-        'quantity': _find(cols, QUANTITY_HINTS),
-        'price':    _find(cols, PRICE_HINTS),
+        'customer': _find(cols, norm_customer_hints),
+        'date':     _find(cols, norm_date_hints),
+        'invoice':  _find(cols, norm_invoice_hints),
+        'monetary': _find(cols, norm_monetary_hints),
+        'quantity': _find(cols, norm_quantity_hints),
+        'price':    _find(cols, norm_price_hints),
     }
 
 

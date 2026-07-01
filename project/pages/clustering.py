@@ -109,37 +109,40 @@ def main():
         customer_col = col_a.selectbox(
             "Kolom Customer ID *",
             df.columns.tolist(),
-            index=df.columns.tolist().index(detected["customer"]) if detected["customer"] else 0,
+            index=df.columns.tolist().index(detected["customer"]) if detected["customer"] and detected["customer"] in df.columns.tolist() else 0,
         )
         date_col = col_b.selectbox(
             "Kolom Tanggal *",
             df.columns.tolist(),
-            index=df.columns.tolist().index(detected["date"]) if detected["date"] else 0,
+            index=df.columns.tolist().index(detected["date"]) if detected["date"] and detected["date"] in df.columns.tolist() else 0,
         )
 
         monetary_options = ["(tidak ada / hitung dari Qty × Harga)"] + df.columns.tolist()
         monetary_col_choice = col_c.selectbox(
             "Kolom Total Nilai (Monetary)",
             monetary_options,
-            index=(monetary_options.index(detected["monetary"]) if detected["monetary"] and detected["monetary"] in monetary_options else 0),
+            index=(monetary_options.index(detected["monetary"]) if detected["monetary"] and detected["monetary"] in df.columns.tolist() else 0),
         )
         monetary_col = None if monetary_col_choice.startswith("(") else monetary_col_choice
 
         col_d, col_e, col_f = st.columns(3)
+        qty_options = ["(tidak dipakai)"] + df.columns.tolist()
         qty_col = col_d.selectbox(
             "Kolom Qty (jika tidak ada Total Nilai)",
-            ["(tidak dipakai)"] + df.columns.tolist(),
-            index=0,
+            qty_options,
+            index=(qty_options.index(detected["quantity"]) if detected["quantity"] and detected["quantity"] in df.columns.tolist() else 0),
         )
+        price_options = ["(tidak dipakai)"] + df.columns.tolist()
         price_col = col_e.selectbox(
             "Kolom Harga Satuan (jika tidak ada Total Nilai)",
-            ["(tidak dipakai)"] + df.columns.tolist(),
-            index=0,
+            price_options,
+            index=(price_options.index(detected["price"]) if detected["price"] and detected["price"] in df.columns.tolist() else 0),
         )
+        invoice_options = ["(tidak dipakai)"] + df.columns.tolist()
         invoice_col = col_f.selectbox(
             "Kolom Invoice (untuk Frequency — opsional)",
-            ["(tidak dipakai)"] + df.columns.tolist(),
-            index=0,
+            invoice_options,
+            index=(invoice_options.index(detected["invoice"]) if detected["invoice"] and detected["invoice"] in df.columns.tolist() else 0),
         )
 
         qty_col = None if qty_col.startswith("(") else qty_col
@@ -161,6 +164,49 @@ def main():
                 st.session_state["rfm_df"] = rfm_df
                 st.session_state["rfm_diag"] = diag
                 st.success(f"RFM berhasil dihitung untuk {len(rfm_df):,} pelanggan.")
+
+                # Auto-run Elbow + Silhouette for K recommendation
+                with st.spinner("Menghitung WCSS dan Silhouette untuk K rekomendasi otomatis…"):
+                    X_numeric_auto = rfm_df[["Recency", "Frequency", "Monetary"]].copy()
+                    X_numeric_auto = scale_rfm(rfm_df)[["Recency", "Frequency", "Monetary"]]
+                    max_k_auto = min(10, len(X_numeric_auto) - 1)
+                    k_range_auto = range(1, max_k_auto + 1)
+                    wcss_auto = compute_wcss(X_numeric_auto, k_range_auto)
+                    rec_auto = recommend_k(wcss_auto, k_range_auto, X_numeric_auto)
+                    st.session_state["wcss"] = wcss_auto
+                    st.session_state["rec"] = rec_auto
+                    st.session_state["recommended_k"] = rec_auto["final_k"]
+                st.success(f"Rekomendasi K otomatis: {rec_auto['final_k']} (konsensus)")
+
+                # Auto-run K-Means with recommended K
+                with st.spinner(f"Menjalankan K-Means dengan K = {rec_auto['final_k']} otomatis…"):
+                    labels_auto, centroids_auto, model_auto = run_kmeans(X_numeric_auto, int(rec_auto["final_k"]))
+                    scores_auto = compute_scores(X_numeric_auto, labels_auto)
+
+                    # Save to DB (auto-run)
+                    conn_auto = sqlite3.connect(db_path)
+                    table_name_auto = f"clustering_{dataset_id}_k{rec_auto['final_k']}_auto"
+                    df_full_auto = rfm_df.copy()
+                    df_full_auto["cluster"] = labels_auto
+                    df_full_auto.to_sql(table_name_auto, conn_auto, if_exists="replace", index=False)
+                    conn_auto.close()
+
+                    save_clustering_result(
+                        db_path,
+                        int(dataset_id),
+                        int(rec_auto["final_k"]),
+                        scores_auto.get("silhouette"),
+                        scores_auto.get("davies_bouldin"),
+                        scores_auto.get("calinski_harabasz"),
+                    )
+
+                st.success(f"K-Means otomatis selesai dengan K = {rec_auto['final_k']} ✅")
+                st.session_state["cluster_labels"] = labels_auto
+                st.session_state["cluster_centroids"] = centroids_auto
+                st.session_state["cluster_scores"] = scores_auto
+                st.session_state["cluster_k"] = int(rec_auto["final_k"])
+                st.session_state["cluster_rfm_df"] = rfm_df
+
             except Exception as e:
                 st.error(f"Gagal menghitung RFM: {e}")
 
